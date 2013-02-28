@@ -53,7 +53,57 @@
 	    		android:id="@+id/z_axis"
 	    		android:gravity="center"/>
 		</TableRow>
+		<TableRow>
+		<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content"
+	    		android:textSize="14sp"  
+	    		android:text="X MAX"
+	    		android:gravity="center"/>
+	    	<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content" 
+	    		android:textSize="14sp" 
+	    		android:text="Y MAX"
+	    		android:gravity="center"/>
+	    	<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content"
+	    		android:textSize="14sp"  
+	    		android:text="Z MAX"
+	    		android:gravity="center"/>
+		</TableRow>
+		<TableRow>
+			<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content"
+	    		android:id="@+id/x_max"
+	    		android:gravity="center"/>
+	    	<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content"
+	    		android:id="@+id/y_max"
+	    		android:gravity="center"/>
+	    	<TextView  
+	    		android:layout_width="wrap_content" 
+	    		android:layout_height="wrap_content"
+	    		android:id="@+id/z_max"
+	    		android:gravity="center"/>
+		</TableRow>
 	</TableLayout>
+	<TextView  
+		android:paddingTop="10dip"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:textSize="16sp" 
+	    android:textStyle="bold"
+	    android:gravity="center"
+		android:text="You threw:"/>
+	<TextView  
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:id="@+id/result"
+	    android:gravity="center"/>
 	<ImageView
 		android:paddingTop="10dip"
 		android:layout_width="wrap_content" 
