@@ -16,10 +16,14 @@ public final class R {
         public static final int vertical=0x7f020002;
     }
     public static final class id {
-        public static final int image=0x7f050003;
+        public static final int image=0x7f050007;
+        public static final int result=0x7f050006;
         public static final int x_axis=0x7f050000;
+        public static final int x_max=0x7f050003;
         public static final int y_axis=0x7f050001;
+        public static final int y_max=0x7f050004;
         public static final int z_axis=0x7f050002;
+        public static final int z_max=0x7f050005;
     }
     public static final class layout {
         public static final int main=0x7f030000;
