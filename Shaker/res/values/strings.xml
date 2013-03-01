@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, Main!</string>
-    <string name="app_name">Shaker</string>
+    <string name="app_name">Throw your phone!</string>
+    <string name="you_threw_">You threw:</string>
+    <string name="z_max">Z MAX</string>
+    <string name="y_max">Y MAX</string>
+    <string name="x_max">X MAX</string>
+    <string name="z_axis">Z-Axis</string>
+    <string name="y_axis">Y-Axis</string>
+    <string name="x_axis">X-Axis</string>
+    <string name="throw_your_phone_">Throw your phone!</string>
+    <string name="best_throw_">Best throw:</string>
 </resources>

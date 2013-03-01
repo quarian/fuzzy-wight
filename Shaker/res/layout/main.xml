@@ -10,7 +10,7 @@
 	    android:textSize="16sp" 
 	    android:textStyle="bold"
 	    android:gravity="center"
-		android:text="Shaker Demo"/>
+		android:text="@string/throw_your_phone_"/>
  	<TableLayout
 		android:paddingTop="10dip"
 		android:layout_width="fill_parent"
@@ -21,19 +21,19 @@
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content"
 	    		android:textSize="14sp"  
-	    		android:text="X-Axis"
+	    		android:text="@string/x_axis"
 	    		android:gravity="center"/>
 	    	<TextView  
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content" 
 	    		android:textSize="14sp" 
-	    		android:text="Y-Axis"
+	    		android:text="@string/y_axis"
 	    		android:gravity="center"/>
 	    	<TextView  
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content"
 	    		android:textSize="14sp"  
-	    		android:text="Z-Axis"
+	    		android:text="@string/z_axis"
 	    		android:gravity="center"/>
 		</TableRow>
 		<TableRow>
@@ -58,19 +58,19 @@
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content"
 	    		android:textSize="14sp"  
-	    		android:text="X MAX"
+	    		android:text="@string/x_max"
 	    		android:gravity="center"/>
 	    	<TextView  
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content" 
 	    		android:textSize="14sp" 
-	    		android:text="Y MAX"
+	    		android:text="@string/y_max"
 	    		android:gravity="center"/>
 	    	<TextView  
 	    		android:layout_width="wrap_content" 
 	    		android:layout_height="wrap_content"
 	    		android:textSize="14sp"  
-	    		android:text="Z MAX"
+	    		android:text="@string/z_max"
 	    		android:gravity="center"/>
 		</TableRow>
 		<TableRow>
@@ -98,17 +98,23 @@
 	    android:textSize="16sp" 
 	    android:textStyle="bold"
 	    android:gravity="center"
-		android:text="You threw:"/>
+		android:text="@string/you_threw_"/>
 	<TextView  
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content"
 	    android:id="@+id/result"
 	    android:gravity="center"/>
-	<ImageView
+	<TextView  
 		android:paddingTop="10dip"
-		android:layout_width="wrap_content" 
-   		android:layout_height="wrap_content"
-   		android:id="@+id/image"
-   		android:layout_gravity="center"
-   		android:visibility="invisible"/>
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:textSize="16sp" 
+	    android:textStyle="bold"
+	    android:gravity="center"
+		android:text="@string/best_throw_"/>
+	<TextView  
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:id="@+id/debug"
+	    android:gravity="center"/>
 </LinearLayout>
