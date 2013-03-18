@@ -117,4 +117,30 @@
 	    android:layout_height="wrap_content"
 	    android:id="@+id/debug"
 	    android:gravity="center"/>
+	<TextView  
+		android:paddingTop="10dip"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:textSize="16sp" 
+	    android:textStyle="bold"
+	    android:gravity="center"
+		android:text="@string/touching_"/>
+	<TextView  
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:id="@+id/touching"
+	    android:gravity="center"/>
+	<TextView  
+		android:paddingTop="10dip"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:textSize="16sp" 
+	    android:textStyle="bold"
+	    android:gravity="center"
+		android:text="@string/touch_time_"/>
+	<TextView  
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:id="@+id/time"
+	    android:gravity="center"/>
 </LinearLayout>
