@@ -10,4 +10,9 @@
     <string name="x_axis">X-Axis</string>
     <string name="throw_your_phone_">Throw your phone!</string>
     <string name="best_throw_">Best throw:</string>
+<<<<<<< HEAD
+=======
+    <string name="touching_">Touching:</string>
+    <string name="touch_time_">Touch time:</string>
+>>>>>>> origin/backend
 </resources>
