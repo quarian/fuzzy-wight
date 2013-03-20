@@ -30,11 +30,12 @@ public class Main extends Activity implements SensorEventListener {
 	private boolean initialized;
 	private SensorManager sensorManager;
     private Sensor accelerometer;
-    private final float noise = (float) 2.0;
+    private final float noise = (float) 0.5;
     private TextView touching, touchTime, bestRes, res;
     private boolean grip = false;
     private long beginTime, endTime, elapsedTime;
     private ArrayList<Float> yAccel, xAccel;
+    private ArrayList<Long> yTimes, xTimes;
     private Random generator = new Random(SystemClock.uptimeMillis());
 	 
     /** Called when the activity is first created. */
@@ -45,7 +46,7 @@ public class Main extends Activity implements SensorEventListener {
         initialized = false;
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, accelerometer , SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelerometer , SensorManager.SENSOR_DELAY_GAME);
 		touching = (TextView)findViewById(R.id.touching);
 		touchTime = (TextView)findViewById(R.id.time);
 		res= (TextView)findViewById(R.id.result);
@@ -56,11 +57,13 @@ public class Main extends Activity implements SensorEventListener {
 		bestRes.setText(Float.toString(result));
 		yAccel = new ArrayList<Float>();
 		xAccel = new ArrayList<Float>();
+		yTimes = new ArrayList<Long>();
+		xTimes = new ArrayList<Long>();
     }
 
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
 
     protected void onPause() {
@@ -73,6 +76,21 @@ public class Main extends Activity implements SensorEventListener {
 		// can be safely ignored for this demo
 	}
 	
+	private float integrate(ArrayList<Float> accel, ArrayList<Long> times) {
+		float sum = (float) 0;
+		float avrg;	
+		if (!accel.isEmpty() && accel.size() > 1) {
+			System.out.println("Acceleration time = " + (times.get(times.size() - 1) - times.get(0)));
+			for (int i = 0; i < accel.size() - 1; i++) {
+				avrg = (accel.get(i) + accel.get(i + 1)) / (float) 2;
+				sum += avrg * (float)(((float) (times.get(i + 1) - times.get(i))) / (float)1000.0);
+			}
+		} else if (accel.size() == 1) {
+			sum = (float)elapsedTime * accel.get(0);
+		}
+		return sum;
+	}
+	
 	private float averageAcceleration(ArrayList<Float> list) {
 		float sum = (float) 0.0;
 		for (int i = 0; i < list.size(); i++) {
@@ -81,28 +99,31 @@ public class Main extends Activity implements SensorEventListener {
 		if (list.isEmpty() || list.size() == 1) {
 			return (float) 0;
 		} else {
-			return sum / (float)(list.size() - 1);
+			return sum / (float)(list.size());
 		}
 	}
 
-	private float throwPhone(float x, float y, float z) {
-		System.out.println("x  = " + x + ", y = " + y);
-		float time = (float) 2 * (((float)elapsedTime/(float)1000.0) * y)/g;
+	private float throwPhone(float xAcc, float yAcc, float zAcc, float vx, float vy) {
+		System.out.println("x  = " + xAcc + ", y = " + yAcc + ", elapsed time = " + elapsedTime);
+		float time = ((float) (2 * 2)) * (/*((float)elapsedTime/(float)1000.0) * yAcc*/vy)/g;
 		System.out.println("Time = " + time);
-		float distance = (float)0.5 * x * time;
+		float distance = /*(float)0.5 * xAcc * time * time*/time * vx;
 		System.out.println("Distance = " + distance);
-		time = (float) 1.8 * ((float)elapsedTime/(float)1000.0) * (g + y);
-		System.out.println("Remaining time = " + time);
-		float retVal = distance + x * time;
+		time = (float) 1.8 / (((float)elapsedTime/(float)1000.0) * (g + yAcc));
+		System.out.println("Remaining time = " + time + ", extra distance = " + (xAcc * time));
+		float retVal = distance + /*xAcc * time*/ time * vx;
 		System.out.println("Returned = " + retVal);
 		float variance = generator.nextFloat();
 		if (generator.nextBoolean()) {
 			variance = -variance;
 		}
 		if (distance == (float )0.0) {
-			return distance;
+			return retVal;
 		} else {
-			return distance + variance;
+			if (retVal + variance < (float) 0) {
+				return retVal;
+			}
+			return retVal + variance;
 		}
 	}
 	
@@ -123,18 +144,42 @@ public class Main extends Activity implements SensorEventListener {
 				elapsedTime = endTime - beginTime;
 				touchTime.setText(Float.toString((float)elapsedTime/(float)1000.0));
 				float temp;
-				float avY, avX;
+				float avY, avX, intX, intY;
+				/*System.out.println("List former of X: " + xAccel);
+				System.out.println("List former of xTimes: " + xTimes);
+				System.out.println("List former of Y: " + yAccel);
+				System.out.println("List former of yTimes: " + yTimes);
+				if ((xAccel.size() == 1 && xAccel.get(0).equals((float) 0.0))
+						|| (yAccel.size() == 1 && yAccel.get(0).equals((float) 0.0))) {
+					if(xAccel.size() == 1) {
+						xAccel = yAccel;
+						xTimes = yTimes;
+					} else {
+						yAccel = xAccel;
+						yTimes = xTimes;
+					}
+				}*/
 				avX = averageAcceleration(xAccel);
 				avY = averageAcceleration(yAccel);
+				intX = integrate(xAccel, xTimes);
+				intY = integrate(yAccel, yTimes);
 				System.out.println("List of X: " + xAccel);
+				System.out.println("List of xTimes: " + xTimes);
 				System.out.println("List of Y: " + yAccel);
+				System.out.println("List of yTimes: " + yTimes);
 				System.out.println("avX = " + avX);
 				System.out.println("avY = " + avY);
-				temp = throwPhone(avX, avY, dZ);
+				System.out.println("intX = " + intX);
+				System.out.println("intY = " + intY);
+				temp = throwPhone(avX, avY, dZ, intX, intY);
 				if (temp > result) {
 					result = temp;
 					bestRes.setText(Float.toString(result));
-				} 
+				}
+				yAccel.clear();
+				xAccel.clear();
+				xTimes.clear();
+				yTimes.clear();
 				res.setText(Float.toString(temp));
 				return true;
 			default:
@@ -176,10 +221,18 @@ public class Main extends Activity implements SensorEventListener {
 				if (dX < noise) {
 					dX = (float)0.0;
 					xAccel.clear();
+					yAccel.clear();
+					xTimes.clear();
+					yTimes.clear();
+					//beginTime = SystemClock.elapsedRealtime();
+					//xTimes.add(SystemClock.elapsedRealtime());
+					//yTimes.add(SystemClock.elapsedRealtime());
 				}
 				if (dY < noise) { 
 					dY = (float)0.0;
 					yAccel.clear();
+					yTimes.clear();
+					//yTimes.add(SystemClock.elapsedRealtime());
 				}
 				if (dZ < noise) dZ = (float)0.0;
 				prevX = x;
@@ -191,6 +244,9 @@ public class Main extends Activity implements SensorEventListener {
 				tvZ.setText(Float.toString(dZ));
 				yAccel.add(dY);
 				xAccel.add(dX);
+				long time = SystemClock.elapsedRealtime();
+				xTimes.add(time);
+				yTimes.add(time);
 				if (prevX > maxX) {
 					maxX = prevX;
 					tvX_max.setText(Float.toString(prevX));
