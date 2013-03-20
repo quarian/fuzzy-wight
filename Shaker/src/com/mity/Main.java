@@ -1,6 +1,7 @@
 package com.mity;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.mity.R;
 
@@ -33,7 +34,8 @@ public class Main extends Activity implements SensorEventListener {
     private TextView touching, touchTime, bestRes, res;
     private boolean grip = false;
     private long beginTime, endTime, elapsedTime;
-    private ArrayList<Float> yAccel;
+    private ArrayList<Float> yAccel, xAccel;
+    private Random generator = new Random(SystemClock.uptimeMillis());
 	 
     /** Called when the activity is first created. */
     @Override
@@ -53,6 +55,7 @@ public class Main extends Activity implements SensorEventListener {
 		res.setText(Float.toString(result));
 		bestRes.setText(Float.toString(result));
 		yAccel = new ArrayList<Float>();
+		xAccel = new ArrayList<Float>();
     }
 
     protected void onResume() {
@@ -70,18 +73,16 @@ public class Main extends Activity implements SensorEventListener {
 		// can be safely ignored for this demo
 	}
 	
-	private float averageY(ArrayList<Float> list) {
+	private float averageAcceleration(ArrayList<Float> list) {
 		float sum = (float) 0.0;
-		float size;
 		for (int i = 0; i < list.size(); i++) {
 			sum += list.get(i);
 		}
-		if (list.size() == 1) {
-			size = (float) 2.0;	// A hack
+		if (list.isEmpty() || list.size() == 1) {
+			return (float) 0;
 		} else {
-			size = (float) list.size();
+			return sum / (float)(list.size() - 1);
 		}
-		return sum / size;
 	}
 
 	private float throwPhone(float x, float y, float z) {
@@ -90,11 +91,19 @@ public class Main extends Activity implements SensorEventListener {
 		System.out.println("Time = " + time);
 		float distance = (float)0.5 * x * time;
 		System.out.println("Distance = " + distance);
-		time = (float) 1.8 / ((float)elapsedTime/(float)1000.0);
+		time = (float) 1.8 * ((float)elapsedTime/(float)1000.0) * (g + y);
 		System.out.println("Remaining time = " + time);
 		float retVal = distance + x * time;
 		System.out.println("Returned = " + retVal);
-		return distance;
+		float variance = generator.nextFloat();
+		if (generator.nextBoolean()) {
+			variance = -variance;
+		}
+		if (distance == (float )0.0) {
+			return distance;
+		} else {
+			return distance + variance;
+		}
 	}
 	
 	@Override
@@ -114,9 +123,14 @@ public class Main extends Activity implements SensorEventListener {
 				elapsedTime = endTime - beginTime;
 				touchTime.setText(Float.toString((float)elapsedTime/(float)1000.0));
 				float temp;
-				float avY;
-				avY = averageY(yAccel);
-				temp = throwPhone(dX, avY, dZ);
+				float avY, avX;
+				avX = averageAcceleration(xAccel);
+				avY = averageAcceleration(yAccel);
+				System.out.println("List of X: " + xAccel);
+				System.out.println("List of Y: " + yAccel);
+				System.out.println("avX = " + avX);
+				System.out.println("avY = " + avY);
+				temp = throwPhone(avX, avY, dZ);
 				if (temp > result) {
 					result = temp;
 					bestRes.setText(Float.toString(result));
@@ -159,7 +173,10 @@ public class Main extends Activity implements SensorEventListener {
 				dX = Math.abs(prevX - x);
 				dY = Math.abs(prevY - y);
 				dZ = Math.abs(prevZ - z);
-				if (dX < noise) dX = (float)0.0;
+				if (dX < noise) {
+					dX = (float)0.0;
+					xAccel.clear();
+				}
 				if (dY < noise) { 
 					dY = (float)0.0;
 					yAccel.clear();
@@ -173,6 +190,7 @@ public class Main extends Activity implements SensorEventListener {
 				tvY.setText(Float.toString(dY));
 				tvZ.setText(Float.toString(dZ));
 				yAccel.add(dY);
+				xAccel.add(dX);
 				if (prevX > maxX) {
 					maxX = prevX;
 					tvX_max.setText(Float.toString(prevX));
