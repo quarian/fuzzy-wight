@@ -30,12 +30,12 @@ public class Main extends Activity implements SensorEventListener {
 	private boolean initialized;
 	private SensorManager sensorManager;
     private Sensor accelerometer;
-    private final float noise = (float) 0.5;
+    private final float noise = (float) 0.001;
     private TextView touching, touchTime, bestRes, res;
     private boolean grip = false;
     private long beginTime, endTime, elapsedTime;
-    private ArrayList<Float> yAccel, xAccel;
-    private ArrayList<Long> yTimes, xTimes;
+    private ArrayList<Float> yAccel, xAccel, flushX, flushY;
+    private ArrayList<Long> yTimes, xTimes, flushXTimes, flushYTimes;
     private Random generator = new Random(SystemClock.uptimeMillis());
 	 
     /** Called when the activity is first created. */
@@ -57,8 +57,12 @@ public class Main extends Activity implements SensorEventListener {
 		bestRes.setText(Float.toString(result));
 		yAccel = new ArrayList<Float>();
 		xAccel = new ArrayList<Float>();
+		flushX = new ArrayList<Float>();
+		flushY = new ArrayList<Float>();
 		yTimes = new ArrayList<Long>();
 		xTimes = new ArrayList<Long>();
+		flushXTimes = new ArrayList<Long>();
+		flushYTimes = new ArrayList<Long>();
     }
 
     protected void onResume() {
@@ -159,11 +163,22 @@ public class Main extends Activity implements SensorEventListener {
 						yTimes = xTimes;
 					}
 				}*/
+				System.out.println("List of flushX: " + flushX);
+				System.out.println("xAccel.size() = " + xAccel.size());
+				if (xAccel.size() == 1 && flushX != null) {
+					xAccel = flushX;
+					xTimes = flushXTimes;
+				}
+				if (yAccel.size() == 1 && flushY != null) {
+					yAccel = flushY;
+					yTimes = flushYTimes;
+				}
 				avX = averageAcceleration(xAccel);
 				avY = averageAcceleration(yAccel);
 				intX = integrate(xAccel, xTimes);
 				intY = integrate(yAccel, yTimes);
 				System.out.println("List of X: " + xAccel);
+				
 				System.out.println("List of xTimes: " + xTimes);
 				System.out.println("List of Y: " + yAccel);
 				System.out.println("List of yTimes: " + yTimes);
@@ -218,20 +233,31 @@ public class Main extends Activity implements SensorEventListener {
 				dX = Math.abs(prevX - x);
 				dY = Math.abs(prevY - y);
 				dZ = Math.abs(prevZ - z);
-				if (dX < noise) {
+				if (/*dX < noise*/ dX == (float)0.0 ) {
 					dX = (float)0.0;
+					if (xAccel.size() != 1) {
+						System.out.println("Flushed x-accelerations " + xAccel);
+						flushX = (ArrayList<Float>) xAccel.clone();
+						flushXTimes = (ArrayList<Long>) xTimes.clone();
+						System.out.println("List of flushX: " + flushX);
+					}
 					xAccel.clear();
-					yAccel.clear();
+					//yAccel.clear();
 					xTimes.clear();
-					yTimes.clear();
+					//yTimes.clear();
 					//beginTime = SystemClock.elapsedRealtime();
 					//xTimes.add(SystemClock.elapsedRealtime());
 					//yTimes.add(SystemClock.elapsedRealtime());
 				}
-				if (dY < noise) { 
+				if (/*dY < noise*/ dY == (float)0.0) { 
 					dY = (float)0.0;
+					if (yAccel.size() != 1) {
+						System.out.println("Flushed y-accelerations " + yAccel);
+						flushY = (ArrayList<Float>) yAccel.clone();
+						flushYTimes = (ArrayList<Long>) yTimes.clone();
+					}
 					yAccel.clear();
-					yTimes.clear();
+					yTimes.clear();	
 					//yTimes.add(SystemClock.elapsedRealtime());
 				}
 				if (dZ < noise) dZ = (float)0.0;
