@@ -24,12 +24,11 @@ public class Main extends Activity implements SensorEventListener {
 	private float prevX, prevY, prevZ;
 	private float maxX, maxY, maxZ;
 	private float dX, dY, dZ;
-	//float t = (float)0.1;
 	float g = (float)9.81;
 	float result = (float)0.0;
 	private boolean initialized;
 	private SensorManager sensorManager;
-    private Sensor accelerometer;
+    private Sensor accelerometer, orientation;
     private final float noise = (float) 0.001;
     private TextView touching, touchTime, bestRes, res;
     private boolean grip = false;
@@ -46,7 +45,9 @@ public class Main extends Activity implements SensorEventListener {
         initialized = false;
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        orientation = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         sensorManager.registerListener(this, accelerometer , SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, orientation, SensorManager.SENSOR_DELAY_GAME);
 		touching = (TextView)findViewById(R.id.touching);
 		touchTime = (TextView)findViewById(R.id.time);
 		res= (TextView)findViewById(R.id.result);
@@ -68,6 +69,7 @@ public class Main extends Activity implements SensorEventListener {
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, orientation, SensorManager.SENSOR_DELAY_GAME);
     }
 
     protected void onPause() {
@@ -77,7 +79,6 @@ public class Main extends Activity implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// can be safely ignored for this demo
 	}
 	
 	private float integrate(ArrayList<Float> accel, ArrayList<Long> times) {
@@ -86,7 +87,8 @@ public class Main extends Activity implements SensorEventListener {
 		if (!accel.isEmpty() && accel.size() > 1) {
 			System.out.println("Acceleration time = " + (times.get(times.size() - 1) - times.get(0)));
 			for (int i = 0; i < accel.size() - 1; i++) {
-				avrg = (accel.get(i) + accel.get(i + 1)) / (float) 2;
+				//avrg = (accel.get(i) + accel.get(i + 1)) / (float) 2;
+				avrg = accel.get(i + 1);
 				sum += avrg * (float)(((float) (times.get(i + 1) - times.get(i))) / (float)1000.0);
 			}
 		} else if (accel.size() == 1) {
@@ -137,32 +139,24 @@ public class Main extends Activity implements SensorEventListener {
 			case MotionEvent.ACTION_DOWN:
 				grip = true;
 				yAccel.clear();
+				xAccel.clear();
+				xAccel.add((float)0.0);
+				yAccel.add((float)0.0);
 				beginTime = SystemClock.elapsedRealtime();
+				xTimes.add(beginTime);	
+				yTimes.add(beginTime);
 				touching.setText(Boolean.toString(grip));
 				touchTime.setText(Long.toString((long)0));
 				return true;
 			case MotionEvent.ACTION_UP:
 				grip = false;
+				//System.out.println(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0).getMaximumRange());
 				touching.setText(Boolean.toString(grip));
 				endTime = SystemClock.elapsedRealtime();
 				elapsedTime = endTime - beginTime;
 				touchTime.setText(Float.toString((float)elapsedTime/(float)1000.0));
 				float temp;
 				float avY, avX, intX, intY;
-				/*System.out.println("List former of X: " + xAccel);
-				System.out.println("List former of xTimes: " + xTimes);
-				System.out.println("List former of Y: " + yAccel);
-				System.out.println("List former of yTimes: " + yTimes);
-				if ((xAccel.size() == 1 && xAccel.get(0).equals((float) 0.0))
-						|| (yAccel.size() == 1 && yAccel.get(0).equals((float) 0.0))) {
-					if(xAccel.size() == 1) {
-						xAccel = yAccel;
-						xTimes = yTimes;
-					} else {
-						yAccel = xAccel;
-						yTimes = xTimes;
-					}
-				}*/
 				System.out.println("List of flushX: " + flushX);
 				System.out.println("xAccel.size() = " + xAccel.size());
 				if (xAccel.size() == 1 && flushX != null) {
@@ -204,89 +198,89 @@ public class Main extends Activity implements SensorEventListener {
 	
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		TextView tvX= (TextView)findViewById(R.id.x_axis);
-		TextView tvY= (TextView)findViewById(R.id.y_axis);
-		TextView tvZ= (TextView)findViewById(R.id.z_axis);
-		TextView tvX_max= (TextView)findViewById(R.id.x_max);
-		TextView tvY_max= (TextView)findViewById(R.id.y_max);
-		TextView tvZ_max= (TextView)findViewById(R.id.z_max);
-
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
-		if (!initialized) {
-			prevX = x;
-			prevY = y;
-			prevZ = z;
-			maxX = x;
-			maxY = y;
-			maxZ = z;
-			tvX.setText("0.0");
-			tvY.setText("0.0");
-			tvZ.setText("0.0");
-			tvX_max.setText(Float.toString(x));
-			tvY_max.setText(Float.toString(y));
-			tvZ_max.setText(Float.toString(z));		
-			initialized = true;
-		} else {
-			if (grip) {
-				dX = Math.abs(prevX - x);
-				dY = Math.abs(prevY - y);
-				dZ = Math.abs(prevZ - z);
-				if (/*dX < noise*/ dX == (float)0.0 ) {
-					dX = (float)0.0;
-					if (xAccel.size() != 1) {
-						System.out.println("Flushed x-accelerations " + xAccel);
-						flushX = (ArrayList<Float>) xAccel.clone();
-						flushXTimes = (ArrayList<Long>) xTimes.clone();
-						System.out.println("List of flushX: " + flushX);
-					}
-					xAccel.clear();
-					//yAccel.clear();
-					xTimes.clear();
-					//yTimes.clear();
-					//beginTime = SystemClock.elapsedRealtime();
-					//xTimes.add(SystemClock.elapsedRealtime());
-					//yTimes.add(SystemClock.elapsedRealtime());
-				}
-				if (/*dY < noise*/ dY == (float)0.0) { 
-					dY = (float)0.0;
-					if (yAccel.size() != 1) {
-						System.out.println("Flushed y-accelerations " + yAccel);
-						flushY = (ArrayList<Float>) yAccel.clone();
-						flushYTimes = (ArrayList<Long>) yTimes.clone();
-					}
-					yAccel.clear();
-					yTimes.clear();	
-					//yTimes.add(SystemClock.elapsedRealtime());
-				}
-				if (dZ < noise) dZ = (float)0.0;
+		Sensor source = event.sensor;
+		if (source.equals(accelerometer)) {
+			System.out.println("Got stuff from accelerometer");
+			TextView tvX= (TextView)findViewById(R.id.x_axis);
+			TextView tvY= (TextView)findViewById(R.id.y_axis);
+			TextView tvZ= (TextView)findViewById(R.id.z_axis);
+			TextView tvX_max= (TextView)findViewById(R.id.x_max);
+			TextView tvY_max= (TextView)findViewById(R.id.y_max);
+			TextView tvZ_max= (TextView)findViewById(R.id.z_max);
+	
+			float x = event.values[0];
+			float y = event.values[1];
+			float z = event.values[2];
+			if (!initialized) {
 				prevX = x;
 				prevY = y;
 				prevZ = z;
-
-				tvX.setText(Float.toString(dX));
-				tvY.setText(Float.toString(dY));
-				tvZ.setText(Float.toString(dZ));
-				yAccel.add(dY);
-				xAccel.add(dX);
-				long time = SystemClock.elapsedRealtime();
-				xTimes.add(time);
-				yTimes.add(time);
-				if (prevX > maxX) {
-					maxX = prevX;
-					tvX_max.setText(Float.toString(prevX));
+				maxX = x;
+				maxY = y;
+				maxZ = z;
+				tvX.setText("0.0");
+				tvY.setText("0.0");
+				tvZ.setText("0.0");
+				tvX_max.setText(Float.toString(x));
+				tvY_max.setText(Float.toString(y));
+				tvZ_max.setText(Float.toString(z));		
+				initialized = true;
+			} else {
+				if (grip) {
+					dX = Math.abs(prevX - x);
+					dY = Math.abs(prevY - y);
+					dZ = Math.abs(prevZ - z);
+					if (/*dX < noise*/ dX == (float)0.0 ) {
+						dX = (float)0.0;
+						if (xAccel.size() != 1) {
+							System.out.println("Flushed x-accelerations " + xAccel);
+							flushX = (ArrayList<Float>) xAccel.clone();
+							flushXTimes = (ArrayList<Long>) xTimes.clone();
+							System.out.println("List of flushX: " + flushX);
+						}
+						xAccel.clear();
+						xTimes.clear();
+					}
+					if (/*dY < noise*/ dY == (float)0.0) { 
+						dY = (float)0.0;
+						if (yAccel.size() != 1) {
+							System.out.println("Flushed y-accelerations " + yAccel);
+							flushY = (ArrayList<Float>) yAccel.clone();
+							flushYTimes = (ArrayList<Long>) yTimes.clone();
+						}
+						yAccel.clear();
+						yTimes.clear();	
+					}
+					if (dZ < noise) dZ = (float)0.0;
+					prevX = x;
+					prevY = y;
+					prevZ = z;
+	
+					tvX.setText(Float.toString(dX));
+					tvY.setText(Float.toString(dY));
+					tvZ.setText(Float.toString(dZ));
+					yAccel.add(dY);
+					xAccel.add(dX);
+					long time = SystemClock.elapsedRealtime();
+					xTimes.add(time);
+					yTimes.add(time);
+					if (prevX > maxX) {
+						maxX = prevX;
+						tvX_max.setText(Float.toString(prevX));
+					}
+					if (prevY > maxY) {
+						maxY = prevY;
+						tvY_max.setText(Float.toString(prevY));
+					}
+					if (prevZ > maxZ) {
+						maxZ = prevZ;
+						tvZ_max.setText(Float.toString(prevZ));
+					}
+	
 				}
-				if (prevY > maxY) {
-					maxY = prevY;
-					tvY_max.setText(Float.toString(prevY));
-				}
-				if (prevZ > maxZ) {
-					maxZ = prevZ;
-					tvZ_max.setText(Float.toString(prevZ));
-				}
-
 			}
+		} else if (source.equals(orientation)) {
+			System.out.println("Got stuff from orientation");
 		}
 	}
 }
