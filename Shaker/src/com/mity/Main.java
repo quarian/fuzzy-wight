@@ -127,7 +127,7 @@ public class Main extends Activity implements SensorEventListener {
 						* (float) (((float) (times.get(i + 1) - times.get(i))) / (float) 1000.0);
 			}
 		} else if (accel.size() == 1) {
-			sum = (float) 0.5 * accel.get(0);
+			sum = (float) ((float) elapsedTime/(float) 1000) * (float) 0.5 * accel.get(0);
 		}
 		return sum;
 	}
@@ -197,7 +197,8 @@ public class Main extends Activity implements SensorEventListener {
 
 	private void sample(float delta, ArrayList<Float> samples,
 			ArrayList<Long> temporalSamples, long time,
-			ArrayList<Float> flushSamples, ArrayList<Long> flushTimes, float newSample) {
+			ArrayList<Float> flushSamples, ArrayList<Long> flushTimes,
+			float newSample) {
 		if (Math.abs(delta) > noise) {
 			if (delta <= (float) 0.0) {
 				delta = (float) 0.0;
@@ -231,6 +232,9 @@ public class Main extends Activity implements SensorEventListener {
 			return true;
 		case MotionEvent.ACTION_UP:
 			grip = false;
+			System.out
+					.println("Accelerations on the moment of release (x, y, z): ("
+							+ x + ", " + y + ", " + z + ")");
 			touching.setText(Boolean.toString(grip));
 			endTime = SystemClock.elapsedRealtime();
 			elapsedTime = endTime - beginTime;
@@ -247,13 +251,22 @@ public class Main extends Activity implements SensorEventListener {
 				xAccel = flushX;
 				xTimes = flushXTimes;
 			}
+			if (xAccel.isEmpty()) {
+				xAccel.add(Math.abs(x));
+			}
 			if (yAccel.size() <= 1 && flushY != null) {
 				yAccel = flushY;
 				yTimes = flushYTimes;
 			}
+			if (yAccel.isEmpty()) {
+				yAccel.add(Math.abs(y));
+			}
 			if (zAccel.size() <= 1 && flushY != null) {
 				zAccel = flushZ;
 				zTimes = flushZTimes;
+			}
+			if (zAccel.isEmpty()) {
+				zAccel.add(Math.abs(z));
 			}
 			Tuple<ArrayList<Float>, ArrayList<Long>> xTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
 					xAccel, xTimes);
@@ -344,7 +357,7 @@ public class Main extends Activity implements SensorEventListener {
 				sample(dX, xAccel, xTimes, time, flushX, flushXTimes, x);
 
 				sample(dY, yAccel, yTimes, time, flushY, flushYTimes, y);
-			
+
 				sample(dZ, zAccel, zTimes, time, flushZ, flushZTimes, z);
 
 				tvX.setText(Float.toString(dX));
