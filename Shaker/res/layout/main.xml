@@ -143,4 +143,9 @@
 	    android:layout_height="wrap_content"
 	    android:id="@+id/time"
 	    android:gravity="center"/>
+	<ImageView 
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:id="@+id/bird"
+	    android:gravity="center"/>
 </LinearLayout>

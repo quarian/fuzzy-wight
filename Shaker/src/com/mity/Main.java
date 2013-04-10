@@ -7,6 +7,7 @@ import com.mity.R;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,7 +27,6 @@ public class Main extends Activity implements SensorEventListener {
 	private float dX, dY, dZ;
 	float g = (float) 9.81;
 	float result = (float) 0.0;
-	private boolean initialized;
 	private SensorManager sensorManager;
 	private Sensor accelerometer, orientation, linearAccelerometer;
 	private final float noise = (float) 0.001;
@@ -39,13 +39,14 @@ public class Main extends Activity implements SensorEventListener {
 			flushZTimes;
 	private Random generator = new Random(SystemClock.uptimeMillis());
 	private MediaPlayer mp;
+	
+	private AnimationDrawable birdAnimation;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		initialized = false;
 		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		accelerometer = sensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -98,6 +99,10 @@ public class Main extends Activity implements SensorEventListener {
 		
 		mp = MediaPlayer.create(getBaseContext(), R.raw.chiptune);
 		mp.start();
+		
+		ImageView birdImage = (ImageView) findViewById(R.id.bird);
+		birdImage.setBackgroundResource(R.drawable.bird_flight);
+		birdAnimation = (AnimationDrawable) birdImage.getBackground();
 	}
 
 	protected void onResume() {
@@ -228,6 +233,7 @@ public class Main extends Activity implements SensorEventListener {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			grip = true;
+			birdAnimation.stop();
 			yAccel.clear();
 			xAccel.clear();
 			xAccel.add((float) 0.0);
@@ -309,6 +315,7 @@ public class Main extends Activity implements SensorEventListener {
 			yTimes.clear();
 			zTimes.clear();
 			res.setText(Float.toString(temp));
+			birdAnimation.start();
 			return true;
 		default:
 			return false;
