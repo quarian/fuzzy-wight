@@ -171,18 +171,15 @@ public class Main extends Activity implements SensorEventListener {
 			float vy) {
 		System.out.println("x  = " + xAcc + ", y = " + yAcc
 				+ ", elapsed time = " + elapsedTime);
-		float time = ((float) (2 * 2)) * (/*
-										 * ((float)elapsedTime/(float)1000.0) *
-										 * yAcc
-										 */vy) / g;
+		float time = ((float) (2 * 2)) * (vy) / g;
 		System.out.println("Time = " + time);
-		float distance = /* (float)0.5 * xAcc * time * time */time * vx;
+		float distance = time * vx;
 		System.out.println("Distance = " + distance);
 		time = (float) 1.8
 				/ (((float) elapsedTime / (float) 1000.0) * (g + yAcc));
 		System.out.println("Remaining time = " + time + ", extra distance = "
 				+ (vx * time));
-		float retVal = distance + /* xAcc * time */time * vx;
+		float retVal = distance + time * vx;
 		System.out.println("Returned = " + retVal);
 		float variance = generator.nextFloat() * (float) 0.001;
 		if (generator.nextBoolean()) {
@@ -195,6 +192,25 @@ public class Main extends Activity implements SensorEventListener {
 				return retVal;
 			}
 			return retVal + variance;
+		}
+	}
+
+	private void sample(float delta, ArrayList<Float> samples,
+			ArrayList<Long> temporalSamples, long time,
+			ArrayList<Float> flushSamples, ArrayList<Long> flushTimes, float newSample) {
+		if (Math.abs(delta) > noise) {
+			if (delta <= (float) 0.0) {
+				delta = (float) 0.0;
+				if (samples.size() >= 1) {
+					flushSamples = (ArrayList<Float>) samples.clone();
+					flushTimes = (ArrayList<Long>) temporalSamples.clone();
+				}
+				samples.clear();
+				temporalSamples.clear();
+			} else {
+				samples.add(Math.abs(newSample) + delta);
+				temporalSamples.add(time);
+			}
 		}
 	}
 
@@ -215,7 +231,6 @@ public class Main extends Activity implements SensorEventListener {
 			return true;
 		case MotionEvent.ACTION_UP:
 			grip = false;
-			// System.out.println(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0).getMaximumRange());
 			touching.setText(Boolean.toString(grip));
 			endTime = SystemClock.elapsedRealtime();
 			elapsedTime = endTime - beginTime;
@@ -240,13 +255,17 @@ public class Main extends Activity implements SensorEventListener {
 				zAccel = flushZ;
 				zTimes = flushZTimes;
 			}
-			Tuple<ArrayList<Float>, ArrayList<Long>> xTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(xAccel, xTimes);
-			Tuple<ArrayList<Float>, ArrayList<Long>> zTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(zAccel, zTimes);
-			xTuple = combineXZ(xTuple, zTuple);
+			Tuple<ArrayList<Float>, ArrayList<Long>> xTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+					xAccel, xTimes);
+			Tuple<ArrayList<Float>, ArrayList<Long>> zTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+					zAccel, zTimes);
+			Tuple<ArrayList<Float>, ArrayList<Long>> yTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+					yAccel, yTimes);
+			xTuple = combineXZ(xTuple, yTuple);
 			avX = averageAcceleration(xAccel);
 			avY = averageAcceleration(yAccel);
 			intX = integrate(xTuple.x, xTuple.y);
-			intY = integrate(yAccel, yTimes);
+			intY = integrate(zAccel, zTimes);
 			System.out.println("List of X: " + xAccel);
 
 			System.out.println("List of xTimes: " + xTimes);
@@ -322,56 +341,11 @@ public class Main extends Activity implements SensorEventListener {
 				dX = x - prevX;
 				dY = y - prevY;
 				dZ = z - prevZ;
-				if (Math.abs(dX) > noise) {
-					if (/* dX < noise */dX <= (float) 0.0) {
-						dX = (float) 0.0;
-						if (xAccel.size() >= 1) {
-							System.out.println("Flushed x-accelerations "
-									+ xAccel);
-							flushX = (ArrayList<Float>) xAccel.clone();
-							flushXTimes = (ArrayList<Long>) xTimes.clone();
-							System.out.println("List of flushX: " + flushX);
-						}
-						xAccel.clear();
-						xTimes.clear();
-					} else {
-						xAccel.add(Math.abs(x) + dX);
-						xTimes.add(time);
-					}
-				}
-				if (Math.abs(dY) > noise) {
-					if (/* dY < noise */dY <= (float) 0.0) {
-						dY = (float) 0.0;
-						if (yAccel.size() >= 1) {
-							System.out.println("Flushed y-accelerations "
-									+ yAccel);
-							flushY = (ArrayList<Float>) yAccel.clone();
-							flushYTimes = (ArrayList<Long>) yTimes.clone();
-						}
-						yAccel.clear();
-						yTimes.clear();
-					} else {
-						yAccel.add(Math.abs(y) + dY);
-						yTimes.add(time);
-					}
-				}
+				sample(dX, xAccel, xTimes, time, flushX, flushXTimes, x);
 
-				if (Math.abs(dZ) > noise) {
-					if (/* dY < noise */dZ <= (float) 0.0) {
-						dZ = (float) 0.0;
-						if (zAccel.size() >= 1) {
-							System.out.println("Flushed z-accelerations "
-									+ zAccel);
-							flushZ = (ArrayList<Float>) zAccel.clone();
-							flushZTimes = (ArrayList<Long>) zTimes.clone();
-						}
-						zAccel.clear();
-						zTimes.clear();
-					} else {
-						zAccel.add(Math.abs(z) + dZ);
-						zTimes.add(time);
-					}
-				}
+				sample(dY, yAccel, yTimes, time, flushY, flushYTimes, y);
+			
+				sample(dZ, zAccel, zTimes, time, flushZ, flushZTimes, z);
 
 				tvX.setText(Float.toString(dX));
 				tvY.setText(Float.toString(dY));
