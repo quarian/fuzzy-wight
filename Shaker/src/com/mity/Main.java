@@ -11,6 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.text.method.Touch;
 import android.view.MotionEvent;
@@ -37,6 +38,7 @@ public class Main extends Activity implements SensorEventListener {
 	private ArrayList<Long> yTimes, xTimes, flushXTimes, flushYTimes, zTimes,
 			flushZTimes;
 	private Random generator = new Random(SystemClock.uptimeMillis());
+	private MediaPlayer mp;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -93,6 +95,9 @@ public class Main extends Activity implements SensorEventListener {
 		flushXTimes = new ArrayList<Long>();
 		flushYTimes = new ArrayList<Long>();
 		flushZTimes = new ArrayList<Long>();
+		
+		mp = MediaPlayer.create(getBaseContext(), R.raw.chiptune);
+		mp.start();
 	}
 
 	protected void onResume() {
@@ -103,11 +108,13 @@ public class Main extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_GAME);
 		sensorManager.registerListener(this, linearAccelerometer,
 				SensorManager.SENSOR_DELAY_GAME);
+		mp.start();
 	}
 
 	protected void onPause() {
 		super.onPause();
 		sensorManager.unregisterListener(this);
+		mp.stop();
 	}
 
 	@Override
@@ -127,7 +134,8 @@ public class Main extends Activity implements SensorEventListener {
 						* (float) (((float) (times.get(i + 1) - times.get(i))) / (float) 1000.0);
 			}
 		} else if (accel.size() == 1) {
-			sum = (float) ((float) elapsedTime/(float) 1000) * (float) 0.5 * accel.get(0);
+			sum = (float) ((float) elapsedTime / (float) 1000) * (float) 0.5
+					* accel.get(0);
 		}
 		return sum;
 	}
