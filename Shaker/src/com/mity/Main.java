@@ -3,6 +3,8 @@ package com.mity;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.w3c.dom.Text;
+
 import com.mity.R;
 
 import android.app.Activity;
@@ -26,6 +28,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextClock;
 import android.widget.TextView;
 import android.os.SystemClock;
 
@@ -287,7 +290,7 @@ public class Main extends Activity implements SensorEventListener {
 			//System.out.println("xContainer = " + xContainer);
 			//System.out.println("upevent X = " + upEvent.getX());
 			//System.out.println("downevent X =" + downEvent.getX());
-			if (startScreen && upEvent.getX() > (xContainer + (float) 100)) {
+			if (startScreen && upEvent.getX() > (xContainer + (float) 200)) {
 				xContainer = (float) 0.0;
 				slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom);
 				textBody.startAnimation(slideDown);
@@ -304,9 +307,11 @@ public class Main extends Activity implements SensorEventListener {
 				//throwScreenBody.startAnimation(slideInRight);
 				startScreen = false;
 				
-			} else if (startScreen && upEvent.getX() < (xContainer - (float) 100)) {
+			} else if (startScreen && upEvent.getX() < (xContainer - (float) 200)) {
 				xContainer = (float) 0.0;
-				System.out.println("Credits!");
+				TextView container = (TextView) findViewById(R.id.textView2);
+				container.setText("Programming lead:\nMiro Nurmela\n\nArtistic lead:\nPäivi Tynninen\n\nSwipe right to get throwing.");
+				//System.out.println("Credits!");
 			} else if (!startScreen && !measure) {
 				measure = true;
 			} else if (!startScreen && measure && !thrown) {
