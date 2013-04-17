@@ -9,4 +9,5 @@
     <color name="xlight">#c8e2ff</color>
     
     <dimen name="headerSize">18pt</dimen>
+    <string name="credits">Programming lead: Miro Nurmela\nArtistic lead: Päivi Tynninen</string>
 </resources>

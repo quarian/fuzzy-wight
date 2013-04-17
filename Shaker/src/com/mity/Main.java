@@ -57,8 +57,10 @@ public class Main extends Activity implements SensorEventListener {
 	private Animation slideRight, slideInRight;
 	private boolean startScreen = true;
 	private boolean measure = false;
+	private boolean credits = false;
 	private boolean thrown = false;
 	private MotionEvent downEvent, upEvent;
+	float xContainer = (float) 0.0;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -127,9 +129,6 @@ public class Main extends Activity implements SensorEventListener {
 		textBody = (FrameLayout) findViewById(R.id.body);
 		headerBody = (LinearLayout) findViewById(R.id.linearLayout1);
 		logo = (ImageView) findViewById(R.id.imageView1);
-		
-		slideDown = new TranslateAnimation(170.0f, 0.0f, 0.0f, 0.0f);
-        slideDown.setDuration(1500);
 		
 		mp = MediaPlayer.create(getBaseContext(), R.raw.aamunkoi);
 		mp.setLooping(true);
@@ -266,23 +265,7 @@ public class Main extends Activity implements SensorEventListener {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			downEvent = event;
-			if (startScreen) {
-				slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom);
-				textBody.startAnimation(slideDown);
-				textBody.setVisibility(View.INVISIBLE);
-				slideRight = AnimationUtils.loadAnimation(this, R.anim.slide_out_side);
-				slideInRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_left);
-				headerBody.startAnimation(slideRight);
-				logo.startAnimation(slideRight);
-				logo.setVisibility(View.INVISIBLE);
-				headerBody.setVisibility(View.INVISIBLE);
-				//startScreenBody.startAnimation(slideRight);
-				//startScreenBody.setVisibility(View.INVISIBLE);
-				//setContentView(R.layout.start);
-				//throwScreenBody.startAnimation(slideInRight);
-				startScreen = false;
-				
-			} else if (thrown) {
+			if (thrown) {
 				setContentView(R.layout.start);
 				thrown = false;
 				measure = false;
@@ -301,7 +284,30 @@ public class Main extends Activity implements SensorEventListener {
 			return true;
 		case MotionEvent.ACTION_UP:
 			upEvent = event;
-			if (!startScreen && !measure) {
+			//System.out.println("xContainer = " + xContainer);
+			//System.out.println("upevent X = " + upEvent.getX());
+			//System.out.println("downevent X =" + downEvent.getX());
+			if (startScreen && upEvent.getX() > (xContainer + (float) 100)) {
+				xContainer = (float) 0.0;
+				slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom);
+				textBody.startAnimation(slideDown);
+				textBody.setVisibility(View.INVISIBLE);
+				slideRight = AnimationUtils.loadAnimation(this, R.anim.slide_out_side);
+				slideInRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_left);
+				headerBody.startAnimation(slideRight);
+				logo.startAnimation(slideRight);
+				logo.setVisibility(View.INVISIBLE);
+				headerBody.setVisibility(View.INVISIBLE);
+				//startScreenBody.startAnimation(slideRight);
+				//startScreenBody.setVisibility(View.INVISIBLE);
+				//setContentView(R.layout.start);
+				//throwScreenBody.startAnimation(slideInRight);
+				startScreen = false;
+				
+			} else if (startScreen && upEvent.getX() < (xContainer - (float) 100)) {
+				xContainer = (float) 0.0;
+				System.out.println("Credits!");
+			} else if (!startScreen && !measure) {
 				measure = true;
 			} else if (!startScreen && measure && !thrown) {
 				grip = false;
@@ -375,16 +381,29 @@ public class Main extends Activity implements SensorEventListener {
 				zTimes.clear();
 				//res.setText(Float.toString(temp));
 				//birdAnimation.start();
-				setContentView(R.layout.end_success);
-				res = (TextView) findViewById(R.id.result);
-				ImageView birdImage = (ImageView) findViewById(R.id.flight);
-				birdImage.setBackgroundResource(R.drawable.bird_flight);
-				birdAnimation = (AnimationDrawable) birdImage.getBackground();
-				birdAnimation.start();
-				res.setText("Congratulations! The bird flew " + Float.toString(temp) + "meters.");
+				if (temp > (float) 0.5) {
+					setContentView(R.layout.end_success);
+					res = (TextView) findViewById(R.id.result);
+					ImageView birdImage = (ImageView) findViewById(R.id.flight);
+					birdImage.setBackgroundResource(R.drawable.bird_flight);
+					birdAnimation = (AnimationDrawable) birdImage.getBackground();
+					birdAnimation.start();
+					res.setText("Congratulations! The bird flew " + Float.toString(temp) + "meters.");
+				} else {
+					setContentView(R.layout.end_fail);
+					res = (TextView) findViewById(R.id.result);
+					res.setText("Oops! The bird only flew " + Float.toString(temp) + "meters. Tap to try again.");
+				}
 				thrown = true;
 			}
 			return true;
+		case MotionEvent.ACTION_MOVE:
+			if (xContainer == (float) 0.0) {
+				xContainer = event.getX();
+			}
+			//System.out.println("Moving");
+			//System.out.println("Moving x = " + event.getX());
+			
 		default:
 			return false;
 		}
