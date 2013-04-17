@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/header"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_gravity="fill"
@@ -18,6 +19,18 @@
         android:background="@android:color/transparent"
         android:contentDescription="@string/app_name"
         android:src="@drawable/pulu" />
+    
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/app_name"
+        android:nextFocusRight="@drawable/pesa_pieni"
+        android:src="@drawable/pesa_pieni" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
@@ -43,6 +56,7 @@
     </LinearLayout>
 
     <FrameLayout
+        android:id="@+id/body"
         android:layout_width="250dp"
         android:layout_height="400dp"
         android:layout_below="@+id/imageView1"
@@ -62,5 +76,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </FrameLayout>
+    
+
 
 </RelativeLayout>

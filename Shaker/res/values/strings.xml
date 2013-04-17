@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Fledge</string>
-    <string name="lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ut lectus a dui pellentesque pretium ac et lectus. Donec vel dapibus diam. Aliquam erat volutpat. Nunc nec tellus quis tortor pretium facilisis et vitae neque. Etiam in nulla in libero posuere volutpat id fringilla mi. Sed porta, ligula eu molestie facilisis, lorem mi bibendum nisl, sit amet volutpat nisl arcu condimentum urna. Aliquam erat volutpat. Aenean imperdiet rutrum risus, sit amet lobortis risus tempus at. Fusce et ante ligula. Vivamus nec accumsan risus.</string>
+    <string name="lorem">Help the little bird to fly by throwing your phone. The throw will be measured when you release your grip from the screen. Swipe rightwards to begin throwing, swipe leftwards to view credits.</string>
     <string name="throwagain">Tap screen to throw again!</string>
     
     <color name="lightblue">#A0CDFF</color>

@@ -7,6 +7,7 @@ import com.mity.R;
 
 import android.app.Activity;
 import android.content.Context;
+import android.gesture.GestureOverlayView.OnGestureListener;
 import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,9 +16,16 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.text.method.Touch;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.os.SystemClock;
 
@@ -31,7 +39,11 @@ public class Main extends Activity implements SensorEventListener {
 	private Sensor accelerometer, orientation, linearAccelerometer;
 	private final float noise = (float) 0.001;
 	private TextView touching, touchTime, bestRes, res, tvX, tvY, tvZ, tvX_max,
-			tvY_max, tvZ_max, mainView;
+			tvY_max, tvZ_max, mainView, header;
+	private FrameLayout textBody;
+	private LinearLayout headerBody;
+	private ImageView logo, birdInNest;
+	private RelativeLayout startScreenBody, throwScreenBody;
 	private boolean grip = false;
 	private long beginTime, endTime, elapsedTime;
 	private ArrayList<Float> yAccel, xAccel, flushX, flushY, zAccel, flushZ;
@@ -41,6 +53,12 @@ public class Main extends Activity implements SensorEventListener {
 	private MediaPlayer mp;
 	
 	private AnimationDrawable birdAnimation;
+	private Animation slideDown;
+	private Animation slideRight, slideInRight;
+	private boolean startScreen = true;
+	private boolean measure = false;
+	private boolean thrown = false;
+	private MotionEvent downEvent, upEvent;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -99,12 +117,25 @@ public class Main extends Activity implements SensorEventListener {
 		flushZTimes = new ArrayList<Long>();
 		
 		
-		//mp = MediaPlayer.create(getBaseContext(), R.raw.chiptune);
-		//mp.start();
 		
-		//ImageView birdImage = (ImageView) findViewById(R.id.bird);
-		//birdImage.setBackgroundResource(R.drawable.bird_flight);
-		//birdAnimation = (AnimationDrawable) birdImage.getBackground();
+		mainView = (TextView) findViewById(R.id.textView2);
+		header = (TextView) findViewById(R.id.textView1);
+		startScreenBody = (RelativeLayout) findViewById(R.id.header);
+		throwScreenBody = (RelativeLayout) findViewById(R.id.throw_screen);
+		birdInNest = (ImageView) findViewById(R.id.imageView2);
+		
+		textBody = (FrameLayout) findViewById(R.id.body);
+		headerBody = (LinearLayout) findViewById(R.id.linearLayout1);
+		logo = (ImageView) findViewById(R.id.imageView1);
+		
+		slideDown = new TranslateAnimation(170.0f, 0.0f, 0.0f, 0.0f);
+        slideDown.setDuration(1500);
+		
+		mp = MediaPlayer.create(getBaseContext(), R.raw.aamunkoi);
+		mp.setLooping(true);
+		mp.start();
+		
+
 	}
 
 	protected void onResume() {
@@ -115,13 +146,13 @@ public class Main extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_GAME);
 		sensorManager.registerListener(this, linearAccelerometer,
 				SensorManager.SENSOR_DELAY_GAME);
-		//mp.start();
+		mp.start();
 	}
 
 	protected void onPause() {
 		super.onPause();
 		sensorManager.unregisterListener(this);
-		//mp.stop();
+		mp.stop();
 	}
 
 	@Override
@@ -132,8 +163,8 @@ public class Main extends Activity implements SensorEventListener {
 		float sum = (float) 0;
 		float avrg;
 		if (!accel.isEmpty() && accel.size() > 1) {
-			System.out.println("Acceleration time = "
-					+ (times.get(times.size() - 1) - times.get(0)));
+			//System.out.println("Acceleration time = "
+			//		+ (times.get(times.size() - 1) - times.get(0)));
 			for (int i = 0; i < accel.size() - 1; i++) {
 				avrg = (accel.get(i) + accel.get(i + 1)) / (float) 2;
 				// avrg = accel.get(i + 1);
@@ -184,18 +215,18 @@ public class Main extends Activity implements SensorEventListener {
 
 	private float throwPhone(float xAcc, float yAcc, float zAcc, float vx,
 			float vy) {
-		System.out.println("x  = " + xAcc + ", y = " + yAcc
-				+ ", elapsed time = " + elapsedTime);
+		//System.out.println("x  = " + xAcc + ", y = " + yAcc
+		//		+ ", elapsed time = " + elapsedTime);
 		float time = ((float) (2 * 2)) * (vy) / g;
-		System.out.println("Time = " + time);
+		//System.out.println("Time = " + time);
 		float distance = time * vx;
-		System.out.println("Distance = " + distance);
+		//System.out.println("Distance = " + distance);
 		time = (float) 1.8
 				/ (((float) elapsedTime / (float) 1000.0) * (g + yAcc));
-		System.out.println("Remaining time = " + time + ", extra distance = "
-				+ (vx * time));
+		//System.out.println("Remaining time = " + time + ", extra distance = "
+		//		+ (vx * time));
 		float retVal = distance + time * vx;
-		System.out.println("Returned = " + retVal);
+		//System.out.println("Returned = " + retVal);
 		float variance = generator.nextFloat() * (float) 0.001;
 		if (generator.nextBoolean()) {
 			variance = -variance;
@@ -234,90 +265,125 @@ public class Main extends Activity implements SensorEventListener {
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			grip = true;
-			birdAnimation.stop();
-			yAccel.clear();
-			xAccel.clear();
-			xAccel.add((float) 0.0);
-			yAccel.add((float) 0.0);
-			beginTime = SystemClock.elapsedRealtime();
-			xTimes.add(beginTime);
-			yTimes.add(beginTime);
-			touching.setText(Boolean.toString(grip));
-			touchTime.setText(Long.toString((long) 0));
+			downEvent = event;
+			if (startScreen) {
+				slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom);
+				textBody.startAnimation(slideDown);
+				textBody.setVisibility(View.INVISIBLE);
+				slideRight = AnimationUtils.loadAnimation(this, R.anim.slide_out_side);
+				slideInRight = AnimationUtils.loadAnimation(this, R.anim.slide_in_left);
+				headerBody.startAnimation(slideRight);
+				logo.startAnimation(slideRight);
+				logo.setVisibility(View.INVISIBLE);
+				headerBody.setVisibility(View.INVISIBLE);
+				//startScreenBody.startAnimation(slideRight);
+				//startScreenBody.setVisibility(View.INVISIBLE);
+				//setContentView(R.layout.start);
+				//throwScreenBody.startAnimation(slideInRight);
+				startScreen = false;
+				
+			} else if (thrown) {
+				setContentView(R.layout.start);
+				thrown = false;
+				measure = false;
+			} else {
+				grip = true;
+				yAccel.clear();
+				xAccel.clear();
+				xAccel.add((float) 0.0);
+				yAccel.add((float) 0.0);
+				beginTime = SystemClock.elapsedRealtime();
+				xTimes.add(beginTime);
+				yTimes.add(beginTime);
+				//touching.setText(Boolean.toString(grip));
+				//touchTime.setText(Long.toString((long) 0));
+			}
 			return true;
 		case MotionEvent.ACTION_UP:
-			grip = false;
-			System.out
-					.println("Accelerations on the moment of release (x, y, z): ("
-							+ x + ", " + y + ", " + z + ")");
-			touching.setText(Boolean.toString(grip));
-			endTime = SystemClock.elapsedRealtime();
-			elapsedTime = endTime - beginTime;
-			touchTime.setText(Float.toString((float) elapsedTime
-					/ (float) 1000.0));
-			float temp;
-			float avY,
-			avX,
-			intX,
-			intY;
-			System.out.println("List of flushX: " + flushX);
-			System.out.println("xAccel.size() = " + xAccel.size());
-			if (xAccel.size() <= 1 && flushX != null) {
-				xAccel = flushX;
-				xTimes = flushXTimes;
+			upEvent = event;
+			if (!startScreen && !measure) {
+				measure = true;
+			} else if (!startScreen && measure && !thrown) {
+				grip = false;
+				//System.out
+				//		.println("Accelerations on the moment of release (x, y, z): ("
+				//				+ x + ", " + y + ", " + z + ")");
+				//touching.setText(Boolean.toString(grip));
+				endTime = SystemClock.elapsedRealtime();
+				elapsedTime = endTime - beginTime;
+				//touchTime.setText(Float.toString((float) elapsedTime
+				//		/ (float) 1000.0));
+				float temp = (float) 0.0;
+				float avY,
+				avX,
+				intX,
+				intY;
+				//System.out.println("List of flushX: " + flushX);
+				//System.out.println("xAccel.size() = " + xAccel.size());
+				if (xAccel.size() <= 1 && flushX != null) {
+					xAccel = flushX;
+					xTimes = flushXTimes;
+				}
+				if (xAccel.isEmpty()) {
+					xAccel.add(Math.abs(x));
+				}
+				if (yAccel.size() <= 1 && flushY != null) {
+					yAccel = flushY;
+					yTimes = flushYTimes;
+				}
+				if (yAccel.isEmpty()) {
+					yAccel.add(Math.abs(y));
+				}
+				if (zAccel.size() <= 1 && flushY != null) {
+					zAccel = flushZ;
+					zTimes = flushZTimes;
+				}
+				if (zAccel.isEmpty()) {
+					zAccel.add(Math.abs(z));
+				}
+				Tuple<ArrayList<Float>, ArrayList<Long>> xTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+						xAccel, xTimes);
+				Tuple<ArrayList<Float>, ArrayList<Long>> zTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+						zAccel, zTimes);
+				Tuple<ArrayList<Float>, ArrayList<Long>> yTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
+						yAccel, yTimes);
+				xTuple = combineXZ(xTuple, yTuple);
+				avX = averageAcceleration(xAccel);
+				avY = averageAcceleration(yAccel);
+				intX = integrate(xTuple.x, xTuple.y);
+				intY = integrate(zAccel, zTimes);
+				//System.out.println("List of X: " + xAccel);
+	
+				//System.out.println("List of xTimes: " + xTimes);
+				//System.out.println("List of Y: " + yAccel);
+				//System.out.println("List of yTimes: " + yTimes);
+				//System.out.println("list of Z:" + zAccel);
+				//System.out.println("avX = " + avX);
+				//System.out.println("avY = " + avY);
+				//System.out.println("intX = " + intX);
+				//System.out.println("intY = " + intY);
+				temp = throwPhone(avX, avY, dZ, intX, intY);
+				if (temp > result) {
+					result = temp;
+					//bestRes.setText(Float.toString(result));
+				}
+				yAccel.clear();
+				xAccel.clear();
+				zAccel.clear();
+				xTimes.clear();
+				yTimes.clear();
+				zTimes.clear();
+				//res.setText(Float.toString(temp));
+				//birdAnimation.start();
+				setContentView(R.layout.end_success);
+				res = (TextView) findViewById(R.id.result);
+				ImageView birdImage = (ImageView) findViewById(R.id.flight);
+				birdImage.setBackgroundResource(R.drawable.bird_flight);
+				birdAnimation = (AnimationDrawable) birdImage.getBackground();
+				birdAnimation.start();
+				res.setText("Congratulations! The bird flew " + Float.toString(temp) + "meters.");
+				thrown = true;
 			}
-			if (xAccel.isEmpty()) {
-				xAccel.add(Math.abs(x));
-			}
-			if (yAccel.size() <= 1 && flushY != null) {
-				yAccel = flushY;
-				yTimes = flushYTimes;
-			}
-			if (yAccel.isEmpty()) {
-				yAccel.add(Math.abs(y));
-			}
-			if (zAccel.size() <= 1 && flushY != null) {
-				zAccel = flushZ;
-				zTimes = flushZTimes;
-			}
-			if (zAccel.isEmpty()) {
-				zAccel.add(Math.abs(z));
-			}
-			Tuple<ArrayList<Float>, ArrayList<Long>> xTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
-					xAccel, xTimes);
-			Tuple<ArrayList<Float>, ArrayList<Long>> zTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
-					zAccel, zTimes);
-			Tuple<ArrayList<Float>, ArrayList<Long>> yTuple = new Tuple<ArrayList<Float>, ArrayList<Long>>(
-					yAccel, yTimes);
-			xTuple = combineXZ(xTuple, yTuple);
-			avX = averageAcceleration(xAccel);
-			avY = averageAcceleration(yAccel);
-			intX = integrate(xTuple.x, xTuple.y);
-			intY = integrate(zAccel, zTimes);
-			System.out.println("List of X: " + xAccel);
-
-			System.out.println("List of xTimes: " + xTimes);
-			System.out.println("List of Y: " + yAccel);
-			System.out.println("List of yTimes: " + yTimes);
-			System.out.println("list of Z:" + zAccel);
-			System.out.println("avX = " + avX);
-			System.out.println("avY = " + avY);
-			System.out.println("intX = " + intX);
-			System.out.println("intY = " + intY);
-			temp = throwPhone(avX, avY, dZ, intX, intY);
-			if (temp > result) {
-				result = temp;
-				bestRes.setText(Float.toString(result));
-			}
-			yAccel.clear();
-			xAccel.clear();
-			zAccel.clear();
-			xTimes.clear();
-			yTimes.clear();
-			zTimes.clear();
-			res.setText(Float.toString(temp));
-			birdAnimation.start();
 			return true;
 		default:
 			return false;
@@ -377,21 +443,21 @@ public class Main extends Activity implements SensorEventListener {
 
 				sample(dZ, zAccel, zTimes, time, flushZ, flushZTimes, z);
 
-				tvX.setText(Float.toString(dX));
+				/*tvX.setText(Float.toString(dX));
 				tvY.setText(Float.toString(dY));
-				tvZ.setText(Float.toString(dZ));
+				tvZ.setText(Float.toString(dZ));*/
 
 				if (x > maxX) {
 					maxX = z;
-					tvX_max.setText(Float.toString(prevX));
+					//tvX_max.setText(Float.toString(prevX));
 				}
 				if (y > maxY) {
 					maxY = z;
-					tvY_max.setText(Float.toString(prevY));
+					//tvY_max.setText(Float.toString(prevY));
 				}
 				if (z > maxZ) {
 					maxZ = z;
-					tvZ_max.setText(Float.toString(prevZ));
+					//tvZ_max.setText(Float.toString(prevZ));
 				}
 				prevX = x;
 				prevY = y;

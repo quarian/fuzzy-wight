@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <animation-list xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:drawable="@drawable/bird" android:duration="200" />
-    <item android:drawable="@drawable/bird1" android:duration="200" />
+    <item android:drawable="@drawable/lento1" android:duration="120" />
+    <item android:drawable="@drawable/lento2" android:duration="120" />
+    <item android:drawable="@drawable/lento3" android:duration="120" />
+    <item android:drawable="@drawable/lento4" android:duration="120" />
+    <item android:drawable="@drawable/lento5" android:duration="120" />
+    <item android:drawable="@drawable/lento6" android:duration="120" />
+    <item android:drawable="@drawable/lento7" android:duration="120" />
+    <item android:drawable="@drawable/lento8" android:duration="120" />
+    <item android:drawable="@drawable/lento9" android:duration="120" />
+    <item android:drawable="@drawable/lento10" android:duration="120" />
 </animation-list>

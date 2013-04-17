@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/throw_screen"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_gravity="fill"
@@ -8,18 +9,7 @@
     android:orientation="vertical"
     android:theme="@style/CustomTheme" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="43dp"
-        android:alpha="0.25"
-        android:text="@string/lorem"
-        android:textColor="@color/blue" />
+
 
     <ImageView
         android:id="@+id/imageView2"
@@ -27,7 +17,7 @@
         android:layout_height="30dp"
         android:layout_below="@+id/textView1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="105dp"
+        android:layout_marginTop="150dp"
         android:background="@android:color/transparent"
         android:contentDescription="@string/app_name"
         android:nextFocusRight="@drawable/pesa_pieni"
