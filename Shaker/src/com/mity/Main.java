@@ -31,7 +31,7 @@ public class Main extends Activity implements SensorEventListener {
 	private Sensor accelerometer, orientation, linearAccelerometer;
 	private final float noise = (float) 0.001;
 	private TextView touching, touchTime, bestRes, res, tvX, tvY, tvZ, tvX_max,
-			tvY_max, tvZ_max;
+			tvY_max, tvZ_max, mainView;
 	private boolean grip = false;
 	private long beginTime, endTime, elapsedTime;
 	private ArrayList<Float> yAccel, xAccel, flushX, flushY, zAccel, flushZ;
@@ -59,27 +59,28 @@ public class Main extends Activity implements SensorEventListener {
 				.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 		sensorManager.registerListener(this, linearAccelerometer,
 				SensorManager.SENSOR_DELAY_GAME);
-		touching = (TextView) findViewById(R.id.touching);
-		touchTime = (TextView) findViewById(R.id.time);
-		res = (TextView) findViewById(R.id.result);
-		bestRes = (TextView) findViewById(R.id.debug);
-		touching.setText(Boolean.toString(false));
-		touchTime.setText(Long.toString((long) 0));
-		res.setText(Float.toString(result));
-		bestRes.setText(Float.toString(result));
+		
+		//touching = (TextView) findViewById(R.id.touching);
+		//touchTime = (TextView) findViewById(R.id.time);
+		//res = (TextView) findViewById(R.id.result);
+		//bestRes = (TextView) findViewById(R.id.debug);
+		//touching.setText(Boolean.toString(false));
+		//touchTime.setText(Long.toString((long) 0));
+		//res.setText(Float.toString(result));
+		//bestRes.setText(Float.toString(result));
 
-		tvX = (TextView) findViewById(R.id.x_axis);
+		/*tvX = (TextView) findViewById(R.id.x_axis);
 		tvY = (TextView) findViewById(R.id.y_axis);
 		tvZ = (TextView) findViewById(R.id.z_axis);
 		tvX_max = (TextView) findViewById(R.id.x_max);
 		tvY_max = (TextView) findViewById(R.id.y_max);
-		tvZ_max = (TextView) findViewById(R.id.z_max);
-		tvX.setText("0.0");
+		tvZ_max = (TextView) findViewById(R.id.z_max);*/
+		/*tvX.setText("0.0");
 		tvY.setText("0.0");
 		tvZ.setText("0.0");
 		tvX_max.setText("0.0");
 		tvY_max.setText("0.0");
-		tvZ_max.setText("0.0");
+		tvZ_max.setText("0.0");*/
 
 		yAccel = new ArrayList<Float>();
 		xAccel = new ArrayList<Float>();
@@ -97,12 +98,13 @@ public class Main extends Activity implements SensorEventListener {
 		flushYTimes = new ArrayList<Long>();
 		flushZTimes = new ArrayList<Long>();
 		
-		mp = MediaPlayer.create(getBaseContext(), R.raw.chiptune);
-		mp.start();
 		
-		ImageView birdImage = (ImageView) findViewById(R.id.bird);
-		birdImage.setBackgroundResource(R.drawable.bird_flight);
-		birdAnimation = (AnimationDrawable) birdImage.getBackground();
+		//mp = MediaPlayer.create(getBaseContext(), R.raw.chiptune);
+		//mp.start();
+		
+		//ImageView birdImage = (ImageView) findViewById(R.id.bird);
+		//birdImage.setBackgroundResource(R.drawable.bird_flight);
+		//birdAnimation = (AnimationDrawable) birdImage.getBackground();
 	}
 
 	protected void onResume() {
@@ -113,13 +115,13 @@ public class Main extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_GAME);
 		sensorManager.registerListener(this, linearAccelerometer,
 				SensorManager.SENSOR_DELAY_GAME);
-		mp.start();
+		//mp.start();
 	}
 
 	protected void onPause() {
 		super.onPause();
 		sensorManager.unregisterListener(this);
-		mp.stop();
+		//mp.stop();
 	}
 
 	@Override
